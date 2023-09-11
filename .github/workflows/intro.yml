@@ -6,10 +6,28 @@ on:
 
 # Contenu de l'action
 jobs:
-  my-first-job:
+  build-test:
     runs-on: ubuntu-latest # système d'exploitation, ubuntu (le plus utilisé) macos windows (pour des app desktop) ou docker parfois
     steps:
-#     On peut directement mettre -uses ou -run
+      # On peut directement mettre -uses ou -run
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4 # voir github marketplace github.com/actions/checkout
+
       - run: echo "Application checked out"
+
+      - uses: oven-sh/setup-bun@v1
+        with: # variables lors de l'execution de l'action, pour la configuration
+          bun-version: latest
+
+      - run: bun install
+      - run: bun run build
+
+      # Le simple & permet de le faire en background, && va afficher le listener du serveur et le flow ne se terminera pas
+      # On teste le build en vérifiant que le serveur se lance
+      - run: |
+          bun run preview &
+          sleep 5 
+
+      - name: Curl the server to test if everything is ok
+        run: curl -I http://localhost:4173
+        
