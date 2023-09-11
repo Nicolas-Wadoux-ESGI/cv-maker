@@ -12,4 +12,4 @@ jobs:
 #     On peut directement mettre -uses ou -run
       - name: Checkout
         uses: actions/checkout@v2
-        run: echo "Application checked out"
+      - run: echo "Application checked out"
