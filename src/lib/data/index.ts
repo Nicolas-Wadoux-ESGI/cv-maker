@@ -8,7 +8,7 @@ import { hobbies, langs } from './langHobbies';
 export { experience, education, langs, hobbies };
 
 export const title: ITitle = {
-	jobDesc: 'Ingénieur Web'
+	jobDesc: 'Ingénieur Web :)'
 };
 
 export const contactInfo: IContactInfo = {
