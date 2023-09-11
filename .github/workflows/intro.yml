@@ -1,0 +1,15 @@
+name: Intro GitHub Action
+
+# évènements déclencheurs
+on:
+  push:
+
+# Contenu de l'action
+jobs:
+  my-first-job:
+    runs-on: ubuntu-latest # système d'exploitation, ubuntu (le plus utilisé) macos windows (pour des app desktop) ou docker parfois
+    steps:
+#     On peut directement mettre -uses ou -run
+      - name: Checkout
+        uses: actions/checkout@v2
+        run: echo "Application checked out"
