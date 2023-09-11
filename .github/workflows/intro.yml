@@ -53,7 +53,7 @@ jobs:
         run: npm i -g vercel@latest
 
       - name: Get vercel env
-        run: vercel pull --yes --environment=production, --token=${{ secrets.VERCEL_GITHUB_TOKEN }} # si on mets pas environment, il fera ca sur un autre que la prod pour tester
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_GITHUB_TOKEN }} # si on mets pas environment, il fera ca sur un autre que la prod pour tester
 
       - name: Build Project Artifacts
         run: vercel build --token=${{ secrets.VERCEL_GITHUB_TOKEN }}
