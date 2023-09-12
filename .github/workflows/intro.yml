@@ -81,7 +81,7 @@ jobs:
         run: |
           pnpm install
           pnpm run build
-          pnpm run preview &
+          pnpm run preview --host &
           sleep 5
 
       - name: Generate snapshot
