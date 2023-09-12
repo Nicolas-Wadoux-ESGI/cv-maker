@@ -42,6 +42,7 @@
 			class="mx-2 mt-2 font-light text-sm text-gray-800 dark:text-gray-200 flex items-center gap-1"
 		>
 			<Passport width={15} />
+			<Passport width={15} />
 			{contactInfo.nationality}
 		</h5>
 	</div>
