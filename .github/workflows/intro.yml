@@ -1,134 +1,134 @@
-name: Intro GitHub Action
-
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_CV_ID }}
-
-on:
-  push:
-
-jobs:
-  build-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4 # voir github marketplace github.com/actions/checkout
-
-      - name: Install Node.js # for cache
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: latest
-          run_install: false # important, sinon il va installer les dépendances sans utiliser le cache
-
-      - name: Get pnpm store directory # for cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache # for cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - run: pnpm install
-      - run: pnpm run build
-      - run: pnpm run preview &
-      - run: sleep 5
-      - name: Curl the server to test if everything is ok
-        run: curl -I http://localhost:4173
-
-  snapshot:
-    runs-on: ubuntu-latest
-    needs: build-test
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Configuration Git
-        run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'actions@users.noreply.github.com'
-
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: latest
-          run_install: false
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install project
-        run: |
-          pnpm install
-          pnpm run build
-          pnpm run preview --host &
-          sleep 5
-
-      - name: Generate snapshot
-        run: |
-          mkdir -m 777 gen
-          docker run -i --init --cap-add=SYS_ADMIN --network host -v ./gen:/home/pptruser/gen ghcr.io/puppeteer/puppeteer:latest node -e "$(cat snapshot.js)" http://127.0.0.1:4173 ./gen
-          mv gen/* static/
-          sed -i 's/http:\/\/127.0.0.1:4173/https:\/\/cv.bnei.dev/g' ./static/*.mhtml
-          git add static
-          git commit -m "Add generated snapshot from GitHub Action"
-          git push
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs:
-      - build-test
-      - snapshot
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: latest
-          run_install: false # important, sinon il va installer les dépendances sans utiliser le cache
-
-      - name: Get pnpm store directory # for cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache # for cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install Vercel cli
-        run: npm i -g vercel@latest
-
-      - name: Get vercel env
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_GITHUB_TOKEN }} # si on mets pas environment, il fera ca sur un autre que la prod pour tester
-
-      - name: Build Project Artifacts
-        run: vercel build --token=${{ secrets.VERCEL_GITHUB_TOKEN }}
-
-      - name: Deploy Project Artifacts to Vercel
-        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_GITHUB_TOKEN }}
+#name: Intro GitHub Action
+#
+#env:
+#  VERCEL_ORG_ID: ${{ secrets.VERCEL_ID }}
+#  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_CV_ID }}
+#
+#on:
+#  push:
+#
+#jobs:
+#  build-test:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v4 # voir github marketplace github.com/actions/checkout
+#
+#      - name: Install Node.js # for cache
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: 16
+#
+#      - uses: pnpm/action-setup@v2
+#        with:
+#          version: latest
+#          run_install: false # important, sinon il va installer les dépendances sans utiliser le cache
+#
+#      - name: Get pnpm store directory # for cache
+#        shell: bash
+#        run: |
+#          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+#
+#      - name: Setup pnpm cache # for cache
+#        uses: actions/cache@v3
+#        with:
+#          path: ${{ env.STORE_PATH }}
+#          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-pnpm-store-
+#
+#      - run: pnpm install
+#      - run: pnpm run build
+#      - run: pnpm run preview &
+#      - run: sleep 5
+#      - name: Curl the server to test if everything is ok
+#        run: curl -I http://localhost:4173
+#
+#  snapshot:
+#    runs-on: ubuntu-latest
+#    needs: build-test
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Configuration Git
+#        run: |
+#          git config --global user.name 'GitHub Actions'
+#          git config --global user.email 'actions@users.noreply.github.com'
+#
+#      - name: Install Node.js
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: 16
+#
+#      - uses: pnpm/action-setup@v2
+#        with:
+#          version: latest
+#          run_install: false
+#
+#      - name: Get pnpm store directory
+#        shell: bash
+#        run: |
+#          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+#
+#      - name: Setup pnpm cache
+#        uses: actions/cache@v3
+#        with:
+#          path: ${{ env.STORE_PATH }}
+#          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-pnpm-store-
+#
+#      - name: Install project
+#        run: |
+#          pnpm install
+#          pnpm run build
+#          pnpm run preview --host &
+#          sleep 5
+#
+#      - name: Generate snapshot
+#        run: |
+#          mkdir -m 777 gen
+#          docker run -i --init --cap-add=SYS_ADMIN --network host -v ./gen:/home/pptruser/gen ghcr.io/puppeteer/puppeteer:latest node -e "$(cat snapshot.js)" http://127.0.0.1:4173 ./gen
+#          mv gen/* static/
+#          sed -i 's/http:\/\/127.0.0.1:4173/https:\/\/cv.bnei.dev/g' ./static/*.mhtml
+#          git add static
+#          git commit -m "Add generated snapshot from GitHub Action"
+#          git push
+#
+#  deploy:
+#    runs-on: ubuntu-latest
+#    needs:
+#      - build-test
+#      - snapshot
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - uses: pnpm/action-setup@v2
+#        with:
+#          version: latest
+#          run_install: false # important, sinon il va installer les dépendances sans utiliser le cache
+#
+#      - name: Get pnpm store directory # for cache
+#        shell: bash
+#        run: |
+#          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+#
+#      - name: Setup pnpm cache # for cache
+#        uses: actions/cache@v3
+#        with:
+#          path: ${{ env.STORE_PATH }}
+#          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-pnpm-store-
+#
+#      - name: Install Vercel cli
+#        run: npm i -g vercel@latest
+#
+#      - name: Get vercel env
+#        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_GITHUB_TOKEN }} # si on mets pas environment, il fera ca sur un autre que la prod pour tester
+#
+#      - name: Build Project Artifacts
+#        run: vercel build --token=${{ secrets.VERCEL_GITHUB_TOKEN }}
+#
+#      - name: Deploy Project Artifacts to Vercel
+#        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_GITHUB_TOKEN }}
